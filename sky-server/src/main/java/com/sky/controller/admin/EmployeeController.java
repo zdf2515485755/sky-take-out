@@ -2,16 +2,15 @@ package com.sky.controller.admin;
 
 import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
+import com.sky.dto.EmployeePageQueryDTO;
+import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.EmployeeService;
 import com.sky.vo.EmployeeLoginVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 员工管理
@@ -57,5 +56,11 @@ public class EmployeeController {
     public Result save(@RequestBody @Validated EmployeeDTO employeeDTO)
     {
         return employeeService.save(employeeDTO);
+    }
+
+    @GetMapping("/page")
+    public Result<PageResult> pageQuery(EmployeePageQueryDTO employeePageQueryDTO)
+    {
+        return employeeService.pageQuery(employeePageQueryDTO);
     }
 }

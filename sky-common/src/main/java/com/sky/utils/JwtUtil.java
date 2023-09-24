@@ -1,10 +1,12 @@
 package com.sky.utils;
 
 import com.sky.constant.JwtClaimsConstant;
+import com.sky.properties.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
@@ -60,6 +62,19 @@ public class JwtUtil {
                 .setSigningKey(secretKey.getBytes(StandardCharsets.UTF_8))
                 // 设置需要解析的jwt
                 .parseClaimsJws(token).getBody();
+
+    }
+    public static void main(String[] args) {
+        JwtProperties jwtProperties = new JwtProperties();
+        jwtProperties.setAdminSecretKey("itcast");
+        jwtProperties.setAdminTtl(7200000);
+
+        String jwt = JwtUtil.createJWT(jwtProperties.getAdminSecretKey(), jwtProperties.getAdminTtl(), 1L);
+        System.out.println("jwt: " + jwt);
+
+        Claims claims = JwtUtil.parseJWT(jwtProperties.getAdminSecretKey(), jwt);
+        Object o = claims.get(JwtClaimsConstant.EMP_ID);
+        System.out.println(o);
 
     }
 

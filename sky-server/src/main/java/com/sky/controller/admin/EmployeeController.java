@@ -1,7 +1,7 @@
 package com.sky.controller.admin;
 
+import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
-import com.sky.properties.JwtProperties;
 import com.sky.result.Result;
 import com.sky.service.EmployeeService;
 import com.sky.vo.EmployeeLoginVO;
@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 员工管理
+ * @author mrzhang
  */
 @RestController
 @RequestMapping("/admin/employee")
@@ -24,8 +25,6 @@ public class EmployeeController {
     @Autowired
     private EmployeeService employeeService;
 
-    @Autowired
-    private JwtProperties jwtProperties;
 
     /**
      * 登录
@@ -50,4 +49,13 @@ public class EmployeeController {
         return Result.success();
     }
 
+    /**
+     * 添加员工
+     * @return
+     */
+    @PostMapping("/save")
+    public Result save(@RequestBody @Validated EmployeeDTO employeeDTO)
+    {
+        return employeeService.save(employeeDTO);
+    }
 }

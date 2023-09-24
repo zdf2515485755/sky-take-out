@@ -1,5 +1,6 @@
 package com.sky.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.StatusConstant;
 import com.sky.dto.EmployeeLoginDTO;
@@ -8,7 +9,11 @@ import com.sky.exception.AccountLockedException;
 import com.sky.exception.AccountNotFoundException;
 import com.sky.exception.PasswordErrorException;
 import com.sky.mapper.EmployeeMapper;
+import com.sky.properties.JwtProperties;
+import com.sky.result.Result;
 import com.sky.service.EmployeeService;
+import com.sky.utils.JwtUtil;
+import com.sky.vo.EmployeeLoginVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
@@ -19,18 +24,23 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Autowired
     private EmployeeMapper employeeMapper;
 
+    @Autowired
+    private JwtProperties jwtProperties;
+
     /**
      * 员工登录
      *
      * @param employeeLoginDTO
      * @return
      */
-    public Employee login(EmployeeLoginDTO employeeLoginDTO) {
+    public Result<EmployeeLoginVO> login(EmployeeLoginDTO employeeLoginDTO) {
         String username = employeeLoginDTO.getUsername();
         String password = employeeLoginDTO.getPassword();
 
         //1、根据用户名查询数据库中的数据
-        Employee employee = employeeMapper.getByUsername(username);
+        QueryWrapper<Employee> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("username", username);
+        Employee employee = employeeMapper.selectOne(queryWrapper);
 
         //2、处理各种异常情况（用户名不存在、密码不对、账号被锁定）
         if (employee == null) {
@@ -39,19 +49,33 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         //密码比对
-        // TODO 后期需要进行md5加密，然后再进行比对
-        if (!password.equals(employee.getPassword())) {
+        String employeePassword = DigestUtils.md5DigestAsHex(password.getBytes());
+
+        if (!employee.getPassword().equals(employeePassword)) {
             //密码错误
             throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR);
         }
 
-        if (employee.getStatus() == StatusConstant.DISABLE) {
+        if (employee.getStatus().equals(StatusConstant.DISABLE)) {
             //账号被锁定
             throw new AccountLockedException(MessageConstant.ACCOUNT_LOCKED);
         }
 
+        //登录成功后，生成jwt令牌
+        String token = JwtUtil.createJWT(
+                jwtProperties.getAdminSecretKey(),
+                jwtProperties.getAdminTtl(),
+                employee.getId());
+
+        EmployeeLoginVO employeeLoginVO = EmployeeLoginVO.builder()
+                .id(employee.getId())
+                .userName(employee.getUsername())
+                .name(employee.getName())
+                .token(token)
+                .build();
+
         //3、返回实体对象
-        return employee;
+        return Result.success(employeeLoginVO);
     }
 
 }

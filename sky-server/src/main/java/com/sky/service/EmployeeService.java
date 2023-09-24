@@ -1,15 +1,10 @@
 package com.sky.service;
 
 import com.sky.dto.EmployeeLoginDTO;
-import com.sky.entity.Employee;
+import com.sky.result.Result;
+import com.sky.vo.EmployeeLoginVO;
 
 public interface EmployeeService {
 
-    /**
-     * 员工登录
-     * @param employeeLoginDTO
-     * @return
-     */
-    Employee login(EmployeeLoginDTO employeeLoginDTO);
-
+    Result<EmployeeLoginVO>login(EmployeeLoginDTO employeeLoginDTO);
 }

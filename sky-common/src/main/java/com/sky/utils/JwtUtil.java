@@ -1,30 +1,38 @@
 package com.sky.utils;
 
+import com.sky.constant.JwtClaimsConstant;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author mrzhang
+ */
 public class JwtUtil {
     /**
      * 生成jwt
      * 使用Hs256算法, 私匙使用固定秘钥
      *
-     * @param secretKey jwt秘钥
-     * @param ttlMillis jwt过期时间(毫秒)
-     * @param claims    设置的信息
-     * @return
      */
-    public static String createJWT(String secretKey, long ttlMillis, Map<String, Object> claims) {
+
+    private JwtUtil() {
+        throw new IllegalStateException("Utility class");
+    }
+    public static String createJWT(String secretKey, long ttlMillis, Long userId) {
         // 指定签名的时候使用的签名算法，也就是header那部分
         SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
         // 生成JWT的时间
         long expMillis = System.currentTimeMillis() + ttlMillis;
         Date exp = new Date(expMillis);
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put(JwtClaimsConstant.EMP_ID, userId);
 
         // 设置jwt的body
         JwtBuilder builder = Jwts.builder()
@@ -47,12 +55,12 @@ public class JwtUtil {
      */
     public static Claims parseJWT(String secretKey, String token) {
         // 得到DefaultJwtParser
-        Claims claims = Jwts.parser()
+        return Jwts.parser()
                 // 设置签名的秘钥
                 .setSigningKey(secretKey.getBytes(StandardCharsets.UTF_8))
                 // 设置需要解析的jwt
                 .parseClaimsJws(token).getBody();
-        return claims;
+
     }
 
 }

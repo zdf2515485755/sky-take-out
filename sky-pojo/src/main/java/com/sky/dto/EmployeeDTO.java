@@ -22,4 +22,5 @@ public class EmployeeDTO implements Serializable {
     @NotBlank(message = "idNumber不能为空")
     private String idNumber;
 
+    private String password;
 }

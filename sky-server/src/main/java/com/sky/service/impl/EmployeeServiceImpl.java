@@ -26,11 +26,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDateTime;
 
+/**
+ * @author mrzhang
+ */
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
 
@@ -96,7 +97,7 @@ public class EmployeeServiceImpl implements EmployeeService {
      * @param employeeDTO
      * @return
      */
-    public Result save(@RequestBody @Validated EmployeeDTO employeeDTO)
+    public Result save(EmployeeDTO employeeDTO)
     {
         Employee employee = new Employee();
 
@@ -140,4 +141,38 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     }
 
+    public Result changeEmployeeStatusById(Integer status, Long id)
+    {
+        Employee employee = Employee.builder()
+                .id(id)
+                .status(status).build();
+        employeeMapper.updateById(employee);
+
+        return Result.success();
+    }
+
+    public Result<Employee> queryById(Long id)
+    {
+        Employee employee = employeeMapper.selectById(id);
+        return Result.success(employee);
+    }
+
+    public Result updateEmployee(EmployeeDTO employeeDTO)
+    {
+        Employee employee = new Employee();
+        BeanUtils.copyProperties(employeeDTO, employee);
+
+        String password = employeeDTO.getPassword();
+        String passwordByMd5= DigestUtils.md5DigestAsHex(password.getBytes());
+        employee.setPassword(passwordByMd5);
+        employee.setStatus(StatusConstant.ENABLE);
+        employee.setCreateTime(LocalDateTime.now());
+        employee.setUpdateTime(LocalDateTime.now());
+        employee.setCreateUser(BaseContext.getCurrentId());
+        employee.setUpdateUser(BaseContext.getCurrentId());
+
+        employeeMapper.updateById(employee);
+
+        return Result.success();
+    }
 }
